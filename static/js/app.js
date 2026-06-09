@@ -150,6 +150,11 @@ function pollJob(jobId) {
   const fetchStatus = async () => {
     try {
       const response = await fetch(`/api/jobs/${jobId}`);
+
+      if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Server Error ${response.status}: ${text}`);
+      }
       const payload = await response.json();
       if (!response.ok) {
         throw new Error(payload.error || "Could not fetch job status.");
