@@ -5,6 +5,7 @@ import math
 import shutil
 import subprocess
 import time
+import traceback
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -73,6 +74,8 @@ class VideoProcessor:
             iou_threshold = options["iou"]
             image_size = options["image_size"]
 
+            print(f"Processing started: {job_id}")
+
             stream = model.track(
                 source=str(input_path),
                 stream=True,
@@ -86,7 +89,11 @@ class VideoProcessor:
                 verbose=False,
             )
 
-            frames_processed = 0
+            frames_processed = frame_index
+
+            if frame_index % 50 == 0:
+                print(f"Processed {frame_index} frames")
+
             for frame_index, result in enumerate(stream, start=1):
                 frame = result.orig_img.copy()
 
@@ -147,6 +154,7 @@ class VideoProcessor:
                         ),
                         processing_time_seconds=time.perf_counter() - start_time,
                     )
+                    print(f"Completed processing job {job_id}")
                     self.job_store.update(
                         job_id,
                         progress=progress,
@@ -192,15 +200,19 @@ class VideoProcessor:
                 report_paths=report_paths,
                 result=result,
             )
+            
         except Exception as exc:
+            traceback.print_exc()
+
             if "writer" in locals() and writer is not None:
-                writer.release()
+               writer.release()
+
             self.job_store.update(
                 job_id,
                 status="failed",
                 progress=100,
                 message="Processing failed",
-                error=str(exc),
+                error=f"{type(exc).__name__}: {exc}",
             )
 
     def _prepare_browser_video(self, raw_output_path: Path, output_path: Path) -> Path:
