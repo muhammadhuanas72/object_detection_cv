@@ -89,12 +89,14 @@ class VideoProcessor:
                 verbose=False,
             )
 
-            frames_processed = frame_index
-
-            if frame_index % 50 == 0:
-                print(f"Processed {frame_index} frames")
+            frames_processed = 0
+            frame_index = 0
 
             for frame_index, result in enumerate(stream, start=1):
+
+                if frame_index % 50 == 0:
+                    print(f"Processed {frame_index} frames")
+
                 frame = result.orig_img.copy()
 
                 if writer is None:
@@ -154,7 +156,7 @@ class VideoProcessor:
                         ),
                         processing_time_seconds=time.perf_counter() - start_time,
                     )
-                    print(f"Completed processing job {job_id}")
+                    
                     self.job_store.update(
                         job_id,
                         progress=progress,
@@ -166,6 +168,8 @@ class VideoProcessor:
                 raise RuntimeError("No frames were found in the uploaded video.")
             writer.release()
             writer = None
+
+            print(f"Completed processing job {job_id}")
 
             self.job_store.update(
                 job_id,
@@ -200,7 +204,7 @@ class VideoProcessor:
                 report_paths=report_paths,
                 result=result,
             )
-            
+
         except Exception as exc:
             traceback.print_exc()
 
