@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VisionTrack AI | Video Object Detection and Counting</title>
+  <meta name="description" content="YOLO and ByteTrack powered video object detection, tracking, counting, and annotated previews.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "Arial", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script>
+    window.APP_CONFIG = {
+      maxFileSizeMb: {{ max_upload_mb }},
+      allowedExtensions: {{ allowed_extensions | tojson }},
+      yoloModel: {{ yolo_model | tojson }}
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-950 antialiased">
+  <div class="page-shell">
+    <header class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+      <a href="#top" class="flex items-center gap-3" aria-label="VisionTrack AI home">
+        <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/25">
+          <i data-lucide="scan-search" class="h-5 w-5"></i>
+        </span>
+        <span>
+          <span class="block text-sm font-semibold uppercase tracking-wide text-emerald-700">VisionTrack</span>
+          <span class="block text-xs text-slate-500">YOLO + ByteTrack Studio</span>
+        </span>
+      </a>
+
+      <nav class="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
+        <a href="#upload" class="hover:text-emerald-600">Upload</a>
+        <a href="#results" class="hover:text-emerald-600">Results</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="mx-auto grid min-h-[calc(100vh-92px)] w-full max-w-7xl items-center gap-8 px-4 pb-10 pt-4 sm:px-6 lg:grid-cols-[1fr_520px] lg:px-8">
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-white px-3 py-1 text-sm font-medium text-emerald-700 shadow-sm">
+            <i data-lucide="cpu" class="h-4 w-4"></i>
+            Fast video detection pipeline
+          </div>
+          <h1 class="mt-7 max-w-3xl text-5xl font-extrabold leading-tight text-slate-950 sm:text-6xl lg:text-7xl">
+            VisionTrack AI
+          </h1>
+          <p class="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+            Upload surveillance, traffic, retail, or crowd footage and get tracked detections, unique category counts, and an annotated video preview.
+          </p>
+
+          <div class="mt-8 grid gap-3 sm:grid-cols-3">
+            <div class="stat-strip">
+              <span>Model</span>
+              <strong>{{ yolo_model }}</strong>
+            </div>
+            <div class="stat-strip">
+              <span>Tracking</span>
+              <strong>ByteTrack</strong>
+            </div>
+            <div class="stat-strip">
+              <span>Result</span>
+              <strong>Annotated preview</strong>
+            </div>
+          </div>
+        </div>
+
+        <section id="upload" class="glass-panel p-5 sm:p-6">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">Video Upload</p>
+              <h2 class="mt-1 text-2xl font-bold text-slate-950">Analyze a video</h2>
+            </div>
+            <span class="rounded-full bg-amber-400/15 px-3 py-1 text-sm font-semibold text-amber-700">Max {{ max_upload_mb }} MB</span>
+          </div>
+
+          <form id="uploadForm" class="mt-5 space-y-5">
+            <label id="dropZone" class="drop-zone" for="videoInput">
+              <input id="videoInput" class="sr-only" type="file" accept=".mp4,.avi,.mov,.mkv,video/mp4,video/quicktime,video/x-msvideo,video/x-matroska">
+              <span class="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/25">
+                <i data-lucide="upload-cloud" class="h-7 w-7"></i>
+              </span>
+              <span class="mt-4 block text-lg font-semibold text-slate-900">Drop video here or browse</span>
+              <span class="mt-2 block text-sm text-slate-500">MP4, AVI, MOV, and MKV supported</span>
+              <span id="fileMeta" class="mt-4 block text-sm font-medium text-emerald-700"></span>
+            </label>
+
+            <button id="processButton" class="primary-button w-full" type="submit">
+              <i data-lucide="play" class="h-5 w-5"></i>
+              Process Video
+            </button>
+          </form>
+        </section>
+      </section>
+
+      <section class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div id="processingPanel" class="glass-panel p-5 sm:p-6">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-wide text-cyan-700">Processing Status</p>
+              <h2 id="statusHeading" class="mt-1 text-2xl font-bold">Ready for upload</h2>
+              <p id="statusMessage" class="mt-2 text-sm text-slate-500">Choose a video and start the detection job.</p>
+            </div>
+            <div class="grid min-w-full gap-3 sm:grid-cols-3 lg:min-w-[420px]">
+              <div class="mini-metric">
+                <span>Upload</span>
+                <strong id="uploadPercent">0%</strong>
+              </div>
+              <div class="mini-metric">
+                <span>Processing</span>
+                <strong id="processPercent">0%</strong>
+              </div>
+              <div class="mini-metric">
+                <span>Status</span>
+                <strong id="jobStatus">Idle</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 space-y-3">
+            <div>
+              <div class="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <span>Upload progress</span>
+                <span id="uploadProgressText">Waiting</span>
+              </div>
+              <div class="progress-track"><span id="uploadProgressBar" class="progress-fill"></span></div>
+            </div>
+            <div>
+              <div class="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <span>Frame analysis</span>
+                <span id="processProgressText">Waiting</span>
+              </div>
+              <div class="progress-track"><span id="processProgressBar" class="progress-fill cyan"></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="results" class="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.35fr_.65fr] lg:px-8">
+        <div class="glass-panel p-5 sm:p-6">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">Detection Results</p>
+              <h2 class="mt-1 text-2xl font-bold">Annotated video</h2>
+            </div>
+            <span id="resultBadge" class="status-badge">No job yet</span>
+          </div>
+          <div class="mt-5 overflow-hidden rounded-2xl border border-white/80 bg-slate-950 shadow-2xl shadow-slate-950/10">
+            <video id="videoPreview" class="aspect-video w-full bg-slate-950" controls playsinline muted></video>
+          </div>
+        </div>
+
+        <aside class="glass-panel p-5 sm:p-6">
+          <p class="text-sm font-semibold uppercase tracking-wide text-amber-700">Live Count</p>
+          <h2 class="mt-1 text-2xl font-bold">Unique objects</h2>
+          <div id="countsList" class="mt-5 space-y-3">
+            <p class="text-sm text-slate-500">Counts will appear as tracked objects are confirmed.</p>
+          </div>
+          <div class="mt-6 rounded-2xl border border-slate-200/70 bg-white p-4">
+            <p class="text-sm font-medium text-slate-500">Total Unique Objects</p>
+            <p id="totalObjects" class="mt-2 text-4xl font-extrabold text-slate-950">0</p>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

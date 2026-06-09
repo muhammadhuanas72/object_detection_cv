@@ -1,0 +1,178 @@
+:root {
+  color-scheme: light;
+  --panel: rgba(255, 255, 255, 0.92);
+  --panel-strong: rgba(255, 255, 255, 0.98);
+  --border: rgba(15, 23, 42, 0.12);
+  --muted: #64748b;
+  --accent: #10b981;
+  --accent-2: #06b6d4;
+  --accent-3: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.page-shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fbff 0%, #eefaf5 44%, #f8fafc 100%);
+}
+
+.glass-panel,
+.stat-strip,
+.mini-metric {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.glass-panel {
+  border-radius: 24px;
+}
+
+.stat-strip,
+.mini-metric {
+  border-radius: 18px;
+  padding: 1rem;
+}
+
+.stat-strip span,
+.mini-metric span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.stat-strip strong,
+.mini-metric strong {
+  display: block;
+  margin-top: 0.45rem;
+  color: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.drop-zone {
+  display: block;
+  min-height: 238px;
+  cursor: pointer;
+  border: 1.5px dashed rgba(16, 185, 129, 0.52);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.36));
+  padding: 2rem 1.25rem;
+  text-align: center;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.drop-zone:hover,
+.drop-zone.dragging {
+  border-color: rgba(6, 182, 212, 0.95);
+  transform: translateY(-2px);
+}
+
+.primary-button {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: 16px;
+  font-weight: 800;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, #059669, #0891b2);
+  color: white;
+  box-shadow: 0 18px 34px rgba(5, 150, 105, 0.26);
+}
+
+.primary-button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+}
+
+.progress-track {
+  height: 0.72rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.18);
+}
+
+.progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #10b981, #f59e0b);
+  transition: width 220ms ease;
+}
+
+.progress-fill.cyan {
+  background: linear-gradient(90deg, #06b6d4, #10b981);
+}
+
+.status-badge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border: 1px solid rgba(100, 116, 139, 0.22);
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.10);
+  padding: 0.45rem 0.75rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.count-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel-strong);
+  padding: 0.85rem 1rem;
+}
+
+.count-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 800;
+}
+
+.count-row strong {
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.14);
+  padding: 0.35rem 0.7rem;
+  color: #047857;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 640px) {
+  .glass-panel {
+    border-radius: 18px;
+  }
+
+  .drop-zone {
+    min-height: 210px;
+  }
+}
